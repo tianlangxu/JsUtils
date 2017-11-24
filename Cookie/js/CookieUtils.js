@@ -1,15 +1,13 @@
 /**
- * Coock Utils
+ * <h3>Coock Utils</h3>
+ * Laoxu <br>
+ *  <ul>
+ * 		<li>1、存储Cookie值</li>
+ * 		<li>2、获取指定Cookie值</li>
+ * 		<li>3、根据首字母查询Cookie值，或者根据正则表达式匹配Cookie值</li>
+ * 	</ul>
  */
 (function(document, owner) {
-
-	/**
-	 * 需求
-	 * 1、存储Cookie值
-	 * 2、获取指定Cookie值
-	 * 3、模糊查询cookie值
-	 */
-
 	/**
 	 * 设置Cookie信息
 	 * @param {String} _key
@@ -29,7 +27,7 @@
 		var jsonObj = {
 			"value": _value
 		};
-		result = _key + "=" + encodeURIComponent(JSON.stringify(jsonObj)) + ";"
+		result = encodeURIComponent(_key) + "=" + encodeURIComponent(JSON.stringify(jsonObj)) + ";"
 
 		// 获取过期时间
 		if(typeof(_expires) == "number") {
@@ -54,7 +52,7 @@
 
 		for(var i = 0, l = cookieArr.length; i < l; i++) {
 			var valueArr = cookieArr[i].split("=");
-			if(valueArr[0] == _name) {
+			if(decodeURIComponent(valueArr[0]) == _name) {
 				return JSON.parse(decodeURIComponent(valueArr[1])).value;
 
 			}
@@ -62,8 +60,8 @@
 	}
 	
 	/**
-	 * 获取开头为指定名称的Cookie信息
-	 * @param {Object} _name
+	 * 获取开头为指定名称的Cookie信息,采用正则表达式查询数据，如有特殊编码需要提前转换
+	 * @param {Object} _name 传入的字符串或者是RegExp
 	 * @param {Object} callback
 	 */
 	owner.getCookies = function(_name, callback) {
@@ -73,9 +71,16 @@
 
 		for(var i = 0, l = cookieArr.length; i < l; i++) {
 			var valueArr = cookieArr[i].split("=");
-
 			var key = valueArr[0];
-			if(eval("/^" + _name + "/").test(key)) {
+			
+			var regInfo = null;
+			if (isRegExp(_name)){
+				regInfo = _name;
+			} else {
+				regInfo = eval("/^" + _name + "/");
+			}
+			
+			if(regInfo.test(key)) {
 				var value = JSON.parse(decodeURIComponent(valueArr[1])).value;
 				getInfoArr.push([key, value]);
 
@@ -94,5 +99,8 @@
 	owner.removeCookie = function (_name){
 		this.setCookie(_name,"",-1);
 	}
-
+	
+	function isRegExp (obj){
+		return Object.prototype.toString.call(obj) == "[object RegExp]";
+	}
 })(document, window.CookieUtils = {});
